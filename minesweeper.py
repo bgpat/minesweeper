@@ -94,17 +94,33 @@ class Board(list):
         block = self.get(i, j)
         block.flag ^= 1
 
-    def get_remains(self):
+    def count_remains(self):
         return sum([sum([not b.opened for b in r]) for r in self])
 
-    def get_bombs(self):
+    def count_bombs(self):
         return sum([sum([b.bomb and not b.opened for b in r]) for r in self])
 
-    def debug(self):
-        return '\n'.join([' '.join([str(b) for b in row]) for row in self])
+    def count_flags(self):
+        return sum([sum([b.flag for b in r]) for r in self])
+
+    def get_flags(self):
+        return ''.join([''.join([str(int(b.flag)) for b in r]) for r in self])
+
+    def set_flags(self, flags):
+        for i in range(self.rows):
+            for j in range(self.columns):
+                if flags[i * self.rows + j] == '1':
+                    self.flag(i, j)
 
     def __str__(self):
         return ''.join([''.join([str(b) for b in row]) for row in self])
+
+    def __hash__(self):
+        b = ''.join([''.join([str(int(b.bomb)) for b in r]) for r in self])
+        return int(b, 2)
+
+    def __repr__(self):
+        return '\n'.join([' '.join([str(b) for b in row]) for row in self])
 
 
 class Block():
@@ -118,7 +134,7 @@ class Block():
 
     def __str__(self):
         if not self.opened:
-            return 'f' if self.flag else '-'
+            return 'f' if self.flag else '_'
         if self.bomb:
             return '*'
         return str(self.number)
