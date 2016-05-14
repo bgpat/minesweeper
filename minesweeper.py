@@ -3,7 +3,7 @@
 import random
 
 
-class MineSweeper:
+class MineSweeper():
     rows = 20
     columns = 30
     offset = {'x': -240, 'y': 140}
@@ -107,7 +107,7 @@ class Board(list):
         return ''.join([''.join([str(b) for b in row]) for row in self])
 
 
-class Block:
+class Block():
     def __init__(self, i=None, j=None):
         self.bomb = False
         self.flag = False
