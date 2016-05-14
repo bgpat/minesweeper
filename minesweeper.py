@@ -10,13 +10,22 @@ class MineSweeper:
     size = 16
     bombs = random.randrange(60, 120)
 
-    def __init__(self):
-        self.newBoard()
-        self.score = 0
-        # self.high = None
+    def __init__(self, board=None):
+        if board is None:
+            self.new_board()
+            self.score = 0
+            self.highscore = 0
 
-    def newBoard(self):
+    def new_board(self):
         self.board = Board(self.rows, self.columns, self.bombs)
+
+    def reset_score(self):
+        self.score = 0
+
+    def add_score(self, score):
+        self.score += score
+        if self.highscore < self.score:
+            self.highscore = self.score
 
 
 class Board(list):
@@ -35,9 +44,9 @@ class Board(list):
             j = int(x / self.rows)
             self[i][j].bomb = True
             self[i][j].number = 9
-        self.calculation()
+        self.calculate()
 
-    def calculation(self):
+    def calculate(self):
         for row in self:
             for block in row:
                 if block.bomb and False:
@@ -85,10 +94,10 @@ class Board(list):
         block = self.get(i, j)
         block.flag ^= 1
 
-    def getRemains(self):
+    def get_remains(self):
         return sum([sum([not b.opened for b in r]) for r in self])
 
-    def getBombs(self):
+    def get_bombs(self):
         return sum([sum([b.bomb and not b.opened for b in r]) for r in self])
 
     def debug(self):
