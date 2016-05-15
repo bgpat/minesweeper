@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import random
+import json
 
 
 class MineSweeper():
@@ -26,6 +27,16 @@ class MineSweeper():
         self.score += score
         if self.highscore < self.score:
             self.highscore = self.score
+
+    def __str__(self):
+        return json.dumps({
+            'score': self.score,
+            'highscore': self.highscore,
+            'board': str(self.board),
+            'remains': self.board.count_remains(),
+            'bombs': self.board.count_bombs(),
+            'flags': self.board.count_flags(),
+        })
 
 
 class Board(list):
@@ -134,7 +145,7 @@ class Block():
 
     def __str__(self):
         if not self.opened:
-            return 'f' if self.flag else '_'
+            return 'f' if self.flag else '-'
         if self.bomb:
             return '*'
         return str(self.number)
