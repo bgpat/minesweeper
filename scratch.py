@@ -21,6 +21,11 @@ def register(name, password):
     ws.login(name, password, mode='register')
 
 
+@blockext.predicate('authenticated')
+def authenticated():
+    return ws.token is not None
+
+
 @blockext.command('open %n %n')
 def open(i, j):
     ws.write_message('open %d %d' % (int(i), int(j)))
