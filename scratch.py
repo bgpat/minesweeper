@@ -18,7 +18,7 @@ def login(name, password, mode='login'):
 
 @blockext.command('register %s:%s')
 def register(name, password):
-    ws.login(name, password, path='register')
+    ws.login(name, password, mode='register')
 
 
 @blockext.command('open %n %n')
