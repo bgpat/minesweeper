@@ -71,8 +71,15 @@ def flags():
     if ws.data:
         return ws.data['flags']
 
+
+@blockext.command('reset_all')
+def reset_all():
+    global ws
+    ws = client.WebSocketClient('localhost', 5677)
+
+
 if __name__ == '__main__':
     scratch = BlockextThread()
     scratch.start()
-    ws = client.WebSocketClient('localhost', 5677)
+    reset_all()
     tornado.ioloop.IOLoop.instance().start()
