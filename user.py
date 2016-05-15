@@ -10,11 +10,11 @@ import minesweeper
 class UserManager(dict):
     path = 'user.db'
 
-    def __init__(self, board=None):
+    def __init__(self):
         dict.__init__(self)
         self.connection = sqlite3.connect(self.path)
         self.create_table()
-        self.board = board
+        self.board = None
 
     def __del__(self):
         self.connection.close()
@@ -45,6 +45,10 @@ class UserManager(dict):
             return user
         return False
 
+    def rewrite(self):
+        for u in self.values():
+            u.ms.board = self.board
+
 
 class User():
     def __init__(self, manager, name, password):
@@ -61,10 +65,9 @@ class User():
         self.flags = None
         self.select()
         self.ms = minesweeper.MineSweeper(self.manager.board)
-        self.resume()
-
-    def __del__(self):
-        self.update()
+        self.ms.score = self.score
+        self.ms.highscore = self.highscore
+        # self.resume()
 
     def authorize(self):
         sql = 'SELECT `password` FROM `users` WHERE `name` = ?'
@@ -86,12 +89,9 @@ class User():
             FROM `users` WHERE `name` = ?'''
         self.cursor.execute(sql, (self.name,))
         self.manager.connection.commit()
-        (
-            self.score,
-            self.highscore,
-            self.board,
-            self.flags,
-        ) = self.cursor.fetchone()
+        res = self.cursor.fetchone()
+        self.score = res[0]
+        self.highscore = res[0]
 
     def insert(self):
         sql = 'INSERT INTO `users` (`name`, `password`) VALUES(?, ?)'
@@ -104,16 +104,13 @@ class User():
             return
         sql = '''UPDATE `users`
             SET `score` = ?,
-                `highscore` = ?,
-                `board` = ?,
-                `flags` = ?
+                `highscore` = ?
             WHERE `name` = ?'''
         data = (
             self.ms.score,
             self.ms.highscore,
-            hash(self.ms.board),
-            self.ms.board.get_flags(),
             self.name,
         )
+        print('update', data)
         self.cursor.execute(sql, data)
         self.manager.connection.commit()

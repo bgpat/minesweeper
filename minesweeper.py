@@ -13,9 +13,13 @@ class MineSweeper():
 
     def __init__(self, board=None):
         if board is None:
+            print('create new board')
             self.new_board()
-            self.score = 0
-            self.highscore = 0
+        else:
+            print('copy board', id(board))
+            self.board = board
+        self.score = 0
+        self.highscore = 0
 
     def new_board(self):
         self.board = Board(self.rows, self.columns, self.bombs)
@@ -50,6 +54,12 @@ class Board(list):
         self.generate()
 
     def generate(self):
+        for row in self:
+            for block in row:
+                block.opened = False
+                block.flag = False
+                block.bomb = False
+                block.number = None
         for x in random.sample(range(self.rows * self.columns), self.bombs):
             i = x % self.rows
             j = int(x / self.rows)
@@ -85,7 +95,6 @@ class Board(list):
         if block.number is None or block.opened or block.flag:
             return 0
         block.opened = True
-        print('open', i, j)
         if block.bomb:
             return False
         if block.number == 0:
@@ -123,15 +132,15 @@ class Board(list):
                 if flags[i * self.rows + j] == '1':
                     self.flag(i, j)
 
+    def debug(self):
+        return '\n'.join([' '.join([str(b) for b in row]) for row in self])
+
     def __str__(self):
         return ''.join([''.join([str(b) for b in row]) for row in self])
 
     def __hash__(self):
         b = ''.join([''.join([str(int(b.bomb)) for b in r]) for r in self])
         return int(b, 2)
-
-    def __repr__(self):
-        return '\n'.join([' '.join([str(b) for b in row]) for row in self])
 
 
 class Block():

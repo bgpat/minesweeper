@@ -28,7 +28,7 @@ class WebSocketClient(threading.Thread):
         url = 'ws://%s:%d/%s' % (self.host, self.port, self.token)
         self.connection = websocket.create_connection(url)
         self.start()
-        # self.connection.on_message = self.on_message
+        self.connection.on_message = self.on_message
         self.connection.on_error = self.on_error
         self.connection.on_close = self.on_close
         self.connection.run_forever()
@@ -47,6 +47,8 @@ class WebSocketClient(threading.Thread):
         print('error')
 
     def login(self, name, password, mode='login'):
+        if self.connection:
+            self.connection.close()
         req = tornado.httpclient.AsyncHTTPClient()
         url = 'http://%s:%d/%s' % (self.host, self.port, mode)
         h = {'content-type': 'application/json'}

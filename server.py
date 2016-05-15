@@ -26,16 +26,18 @@ class LoginHandler(tornado.web.RequestHandler):
                 self.write(res)
         except Exception as e:
             self.set_status(401)
-            self.write(e)
+            print(e)
 
     def login(self, data):
-        user = app.user_manager.login(data['name'], data['password'])
+        global user_manager
+        user = user_manager.login(data['name'], data['password'])
         if user:
             return {'token': user.token}
         self.set_status(401)
 
     def register(self, data):
-        user = app.user_manager.register(data['name'], data['password'])
+        global user_manager
+        user = user_manager.register(data['name'], data['password'])
         if user:
             return {'token': user.token}
         self.set_status(409)
@@ -43,14 +45,16 @@ class LoginHandler(tornado.web.RequestHandler):
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
+        global user_manager
         tornado.websocket.WebSocketHandler.__init__(self, *args, **kwargs)
-        self.ms = minesweeper.MineSweeper()
+        self.ms = minesweeper.MineSweeper(user_manager.board)
+        self.manager = user_manager
+        self.manager.board = self.ms.board
 
     def open(self, token):
         try:
-            u = app.user_manager[token]
+            u = self.manager[token]
             u.ws = self
-            print(str(u.ms))
             self.write_message(str(u.ms))
         except:
             self.write_message('error')
@@ -58,25 +62,31 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         token = self.path_args[0]
         (op, i, j) = message.split(' ')
-        ms = app.user_manager[token].ms
+        ms = self.manager[token].ms
         if op == 'open':
-            res = ms.board.open(int(i), int(j))
+            res = self.ms.board.open(int(i), int(j))
             if res is False:
                 ms.reset_score()
             else:
                 ms.add_score(res)
         if op == 'flag':
-            ms.board.flag(int(i), int(j))
-        print(ms.board)
-        for u in app.user_manager.values():
+            self.ms.board.flag(int(i), int(j))
+        bombs = self.ms.board.count_bombs()
+        remains = self.ms.board.count_remains()
+        print(self.ms.board.debug(), bombs, remains)
+        if bombs == remains:
+            self.ms.board.generate()
+        self.manager[token].update()
+        for u in self.manager.values():
             if not u.ws:
                 print('error', u.token, u.ws)
                 continue
+            print(hash(self.ms.board), hash(u.ms.board))
             u.ws.write_message(str(u.ms))
 
     def on_close(self):
         token = self.path_args[0]
-        del app.user_manager[token]
+        del self.manager[token]
         print('close')
 
     def check_origin(self, origin):
@@ -87,7 +97,9 @@ app = tornado.web.Application([
     ('/login', LoginHandler),
     ('/register', LoginHandler),
 ])
-app.user_manager = user.UserManager()
+ms_tmp = minesweeper.MineSweeper()
+user_manager = user.UserManager()
+user_manager.board = ms_tmp.board
 
 if __name__ == '__main__':
     app.listen(5677)
