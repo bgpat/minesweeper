@@ -5,6 +5,9 @@ import tornado.ioloop
 import blockext
 import client
 
+host = 'localhost'
+port = 5677
+
 
 class BlockextThread(threading.Thread):
     def run(self):
@@ -75,10 +78,14 @@ def flags():
 @blockext.command('reset_all')
 def reset_all():
     global ws
-    ws = client.WebSocketClient('localhost', 5677)
+    ws = client.WebSocketClient(host, port)
 
 
 if __name__ == '__main__':
+    if len(sys.argv) > 2:
+        host = sys.argv[1]
+    if len(sys.argv) > 3:
+        port = sys.argv[2]
     scratch = BlockextThread()
     scratch.start()
     reset_all()
