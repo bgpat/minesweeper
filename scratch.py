@@ -79,13 +79,15 @@ def flags():
 @blockext.command('reset_all')
 def reset_all():
     global ws
+    print('reset', host, port)
     ws = client.WebSocketClient(host, port)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 2:
+    print(sys.argv, len(sys.argv))
+    if len(sys.argv) >= 2:
         host = sys.argv[1]
-    if len(sys.argv) > 3:
+    if len(sys.argv) >= 3:
         port = sys.argv[2]
     scratch = BlockextThread()
     scratch.start()
