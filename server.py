@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import sqlite3
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
@@ -41,6 +42,23 @@ class LoginHandler(tornado.web.RequestHandler):
         if user:
             return {'token': user.token}
         self.set_status(409)
+
+
+class RankingHandler(tornado.web.RequestHandler):
+    path = 'user.db'
+
+    def __init__(self, *args, **kwargs):
+        tornado.web.RequestHandler.__init__(self, *args, **kwargs)
+        self.connection = sqlite3.connect(self.path)
+
+    def get(self):
+        sql = '''SELECT `name`, `score`, `highscore` FROM `users`
+            ORDER BY `score` DESC'''
+        cursor = self.connection.cursor()
+        cursor.execute(sql)
+        self.connection.commit()
+        res = cursor.fetchall()
+        self.write(json.dumps(res))
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
@@ -96,6 +114,7 @@ app = tornado.web.Application([
     ('/(.{32})', WebSocketHandler),
     ('/login', LoginHandler),
     ('/register', LoginHandler),
+    ('/ranking', RankingHandler),
 ])
 ms_tmp = minesweeper.MineSweeper()
 user_manager = user.UserManager()

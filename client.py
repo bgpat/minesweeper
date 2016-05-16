@@ -15,6 +15,8 @@ class WebSocketClient(threading.Thread):
         self.token = None
         self.connection = None
         self.data = None
+        self.ranking = None
+        self.get_ranking()
 
     def run(self):
         print('run')
@@ -67,8 +69,18 @@ class WebSocketClient(threading.Thread):
         except:
             pass
 
+    def get_ranking(self, res=None):
+        if res:
+            try:
+                self.ranking = json.loads(res.body.decode('utf-8'))
+            except:
+                pass
+            return
+        req = tornado.httpclient.AsyncHTTPClient()
+        url = 'http://%s:%d/ranking' % (self.host, self.port)
+        req.fetch(url, self.get_ranking)
+
 if __name__ == '__main__':
-    websocket.enableTrace(True)
     ws = WebSocketClient('localhost', 5677)
     ws.login('test', 'password')
     tornado.ioloop.IOLoop.instance().start()

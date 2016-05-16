@@ -76,6 +76,17 @@ def flags():
         return ws.data['flags']
 
 
+@blockext.command('fetch ranking')
+def fetch_ranking():
+    ws.get_ranking()
+
+
+@blockext.reporter('ranking')
+def ranking():
+    if ws.ranking:
+        return ':'.join(['%s,%d,%d' % (u[0], u[1], u[2]) for u in ws.ranking])
+
+
 @blockext.command('reset_all')
 def reset_all():
     global ws
@@ -84,7 +95,6 @@ def reset_all():
 
 
 if __name__ == '__main__':
-    print(sys.argv, len(sys.argv))
     if len(sys.argv) >= 2:
         host = sys.argv[1]
     if len(sys.argv) >= 3:
