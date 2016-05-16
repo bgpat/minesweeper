@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import json
 import sqlite3
 import tornado.ioloop
@@ -19,26 +20,31 @@ class LoginHandler(tornado.web.RequestHandler):
         try:
             data = json.loads(req.body.decode('utf-8'))
             res = None
+            name = re.sub(r'[^A-Za-z0-9\-_]', '', data['name'])
+            password = re.sub(r'[^A-Za-z0-9\-_]', '', data['password'])
             if req.path == '/login':
-                res = self.login(data)
+                res = self.login(name, password)
             if req.path == '/register':
-                res = self.register(data)
+                res = self.register(name, password)
             if res is not None:
                 self.write(res)
         except Exception as e:
             self.set_status(401)
             print(e)
 
-    def login(self, data):
+    def login(self, name, password):
         global user_manager
-        user = user_manager.login(data['name'], data['password'])
+        user = user_manager.login(name, password)
         if user:
             return {'token': user.token}
         self.set_status(401)
 
-    def register(self, data):
+    def register(self, name, password):
         global user_manager
-        user = user_manager.register(data['name'], data['password'])
+        if len(name) == 0 or len(password) == 0:
+            self.set_status(400)
+            return
+        user = user_manager.register(name, password)
         if user:
             return {'token': user.token}
         self.set_status(409)
