@@ -84,7 +84,7 @@ def fetch_ranking():
 @blockext.reporter('ranking')
 def ranking():
     if ws.ranking:
-        return ':'.join(['%s,%d,%d' % (u[0], u[1], u[2]) for u in ws.ranking])
+        return ':'.join(['%s/%d/%d' % (u[0], u[1], u[2]) for u in ws.ranking])
 
 
 @blockext.command('reset_all')
