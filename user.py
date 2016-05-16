@@ -24,9 +24,7 @@ class UserManager(dict):
             `name` TEXT PRIMARY KEY,
             `password` TEXT NOT NULL,
             `score` INTEGER NOT NULL DEFAULT '0',
-            `highscore` INTEGER NOT NULL DEFAULT '0',
-            `board` TEXT,
-            `flags` TEXT
+            `highscore` INTEGER NOT NULL DEFAULT '0'
         )'''
         self.connection.execute(sql)
 
@@ -61,13 +59,10 @@ class User():
         self.authenticated = self.authorize()
         self.score = 0
         self.highscore = 0
-        self.board = None
-        self.flags = None
         self.select()
         self.ms = minesweeper.MineSweeper(self.manager.board)
         self.ms.score = self.score
         self.ms.highscore = self.highscore
-        # self.resume()
 
     def authorize(self):
         sql = 'SELECT `password` FROM `users` WHERE `name` = ?'
@@ -78,15 +73,10 @@ class User():
             return None
         return passlib.hash.sha256_crypt.verify(self.password, res[0])
 
-    def resume(self):
-        if self.board == hash(self.ms.board):
-            self.ms.board.set_flags(self.flags)
-
     def select(self):
         if not self.authenticated:
             return
-        sql = '''SELECT `score`, `highscore`, `board`, `flags`
-            FROM `users` WHERE `name` = ?'''
+        sql = 'SELECT `score`, `highscore` FROM `users` WHERE `name` = ?'
         self.cursor.execute(sql, (self.name,))
         self.manager.connection.commit()
         res = self.cursor.fetchone()
